@@ -7,15 +7,14 @@ public class RomanNumeralConverter {
             throw new IllegalArgumentException("Roman numeral cannot be null or empty");
         }
 
+
+        validateRomanRules(roman);
+
         int total = 0;
         int prevValue = 0;
 
         for (int i = roman.length() - 1; i >= 0; i--) {
             int currentValue = getValue(roman.charAt(i));
-
-            if (currentValue == -1) {
-                throw new IllegalArgumentException("Invalid character: " + roman.charAt(i));
-            }
 
             if (currentValue < prevValue) {
                 total -= currentValue;
@@ -42,25 +41,63 @@ public class RomanNumeralConverter {
         }
     }
 
+    private void validateRomanRules(String roman) {
+        int consecutiveCount = 1;
+
+        for (int i = 1; i <= roman.length(); i++) {
+            if (i < roman.length() && roman.charAt(i) == roman.charAt(i - 1)) {
+                consecutiveCount++;
+
+                char currentChar = roman.charAt(i);
+
+                // V, L, D can never repeat
+                if (currentChar == 'V' || currentChar == 'L' || currentChar == 'D') {
+                    throw new IllegalArgumentException(
+                            "Invalid Roman numeral: '" + currentChar + "' cannot be repeated"
+                    );
+                }
+
+                // I, X, C, M cannot repeat more than 3 times
+                if (consecutiveCount > 3) {
+                    throw new IllegalArgumentException(
+                            "Invalid Roman numeral: Cannot repeat '" + currentChar +
+                                    "' more than 3 times"
+                    );
+                }
+            } else {
+                consecutiveCount = 1;
+            }
+        }
+
+        // Check for invalid subtraction patterns
+        String[] invalidPatterns = {
+                "IL", "IC", "ID", "IM", "VX", "VL", "VC", "VD", "VM",
+                "XD", "XM", "LC", "LD", "LM", "DM"
+        };
+
+        for (String pattern : invalidPatterns) {
+            if (roman.contains(pattern)) {
+                throw new IllegalArgumentException(
+                        "Invalid Roman numeral: Invalid subtraction pattern '" + pattern + "'"
+                );
+            }
+        }
+    }
+
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         RomanNumeralConverter converter = new RomanNumeralConverter();
 
-        System.out.println(" ROMAN NUMERAL CONVERTER ");
-        System.out.println("Enter Roman numerals to convert to numbers.");
-        System.out.println("Type 'exit' or 'quit' to stop.\n");
 
         while (true) {
             System.out.print("Enter a Roman numeral: ");
             String input = scanner.nextLine().trim();
 
-            // Check if user wants to exit
             if (input.equalsIgnoreCase("exit") || input.equalsIgnoreCase("quit")) {
                 System.out.println("Goodbye!");
                 break;
             }
 
-            // Check if input is empty
             if (input.isEmpty()) {
                 System.out.println("Please enter a Roman numeral.\n");
                 continue;
